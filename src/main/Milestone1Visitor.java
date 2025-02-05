@@ -1,4 +1,5 @@
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.*;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,9 +17,8 @@ public class Milestone1Visitor extends XPathBaseVisitor<ArrayList<Node>> {
     /*
     constructor for the visitor
      */
-    public Milestone1Visitor() {
-        System.out.println("Calling milestone 1 constructor");
-        this.nodes = new ArrayList<>();
+    public Milestone1Visitor(ArrayList<Node> nodes) {
+        this.nodes = nodes;
     }
 
     /*
@@ -71,9 +71,9 @@ public class Milestone1Visitor extends XPathBaseVisitor<ArrayList<Node>> {
         System.out.println("visitAp_all Called");
         System.out.println(ctx.getText());
         visit(ctx.doc());
-        ArrayList<Node> startingNodes = new ArrayList<>();
-        startingNodes.addAll(this.nodes);
-        bfs(startingNodes,this.nodes);
+        ArrayList<Node> startingnodes = new ArrayList<>();
+        startingnodes.addAll(this.nodes);
+        bfs(startingnodes,this.nodes);
         visit(ctx.rp());
         return this.nodes;
     }
@@ -98,145 +98,57 @@ public class Milestone1Visitor extends XPathBaseVisitor<ArrayList<Node>> {
 
     @Override
     public ArrayList<Node> visitRpText(XPathParser.RpTextContext ctx) {
-        System.out.println("visitRPText Called");
-        ArrayList<Node> result = new ArrayList<>();
-        ArrayList<Node> candidates = getNextLevelNodes(this.nodes);
-        for (Node n: candidates) {
-            if (n.getNodeType() == Node.TEXT_NODE) {
-                result.add(n);
-            }
-        }
-        return result;
+        return super.visitRpText(ctx);
     }
 
     @Override
     public ArrayList<Node> visitRpCurr(XPathParser.RpCurrContext ctx) {
-        // return what we have
-        return this.nodes;
+        return super.visitRpCurr(ctx);
     }
 
     @Override
     public ArrayList<Node> visitRpChildren(XPathParser.RpChildrenContext ctx) {
-        System.out.println("calling visit rp children");
-        ArrayList<Node> res = new ArrayList<>();
-        ArrayList<Node> candidates = getNextLevelNodes(this.nodes);
-        for (Node node : candidates) {
-            res.add(node);
-        }
-        // update class variable to the new res array
-        this.nodes = res;
-        return res;
-
+        return super.visitRpChildren(ctx);
     }
 
     @Override
     public ArrayList<Node> visitRpTag(XPathParser.RpTagContext ctx) {
-        // extract tag name
-        String name = ctx.tagName().getText();
-        ArrayList<Node> res = new ArrayList<>();
-        ArrayList<Node> candidates = getNextLevelNodes(this.nodes);
-        for (Node node : candidates) {
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                if (node.getNodeName().equals(name)) {
-                    res.add(node);
-                }
-            }
-        }
-        this.nodes = res;
-        return res;
+        return super.visitRpTag(ctx);
     }
 
-    //TODO: When we visit a (rp) format
     @Override
     public ArrayList<Node> visitRpParen(XPathParser.RpParenContext ctx) {
-        System.out.println("visitRp_parenthesis Called");
-        System.out.println(ctx.rp().getText());
-        return visit(ctx.rp());
+        return super.visitRpParen(ctx);
     }
 
     @Override
     public ArrayList<Node> visitRpSlash(XPathParser.RpSlashContext ctx) {
-        visit(ctx.rp(0));
-        visit(ctx.rp(1));
-        HashSet<Node> uniqueSet = new HashSet<Node>(this.nodes);
-        this.nodes = new ArrayList<>(uniqueSet);
-        return this.nodes;
+        return super.visitRpSlash(ctx);
     }
 
     @Override
     public ArrayList<Node> visitRpDoubleslash(XPathParser.RpDoubleslashContext ctx) {
-        //first get into the context of rp1.
-        visit(ctx.rp(0));
-        //get all nodes below rp1 context.
-        ArrayList<Node> startingNodes = new ArrayList<>();
-        startingNodes.addAll(this.nodes);
-        bfs(startingNodes,this.nodes);
-        //select unique element
-        HashSet<Node> uniqueSet = new HashSet<Node>(this.nodes);
-        this.nodes = new ArrayList<>(uniqueSet);
-
-        //now from current unique nodes context, check for rp2
-        visit(ctx.rp(1));
-        //Then select unique results from current context arraylist
-        uniqueSet = new HashSet<Node>(this.nodes);
-        this.nodes = new ArrayList<>(uniqueSet);
-        return this.nodes;
+        return super.visitRpDoubleslash(ctx);
     }
 
     @Override
     public ArrayList<Node> visitRpBracket(XPathParser.RpBracketContext ctx) {
-        System.out.println("visitRp_bracket Called: " + ctx.getText());
-        visit(ctx.rp());
-        visit(ctx.f());
-        return this.nodes;
+        return super.visitRpBracket(ctx);
     }
 
-    //TODO: when we want to visit parent .. format
     @Override
     public ArrayList<Node> visitRpParenthesis(XPathParser.RpParenthesisContext ctx) {
-        System.out.println("visitRp_parent Called");
-        ArrayList<Node> parents = new ArrayList<>();
-        for (Node child: this.nodes) {
-            parents.add(child.getParentNode());
-        }
-        this.nodes = parents;
-        return parents;
+        return super.visitRpParenthesis(ctx);
     }
 
     @Override
     public ArrayList<Node> visitRpAttr(XPathParser.RpAttrContext ctx) {
-        System.out.println("visitRp_attr Called");
-        String attName = ctx.attName().getText();
-        ArrayList<Node> result = new ArrayList<>();
-        ArrayList<Node> candidates = getNextLevelNodes(this.nodes);
-        for (Node cand:candidates) {
-            if (cand.getNodeType() == Node.ELEMENT_NODE){
-                if (cand.getNodeName().equals(attName)){
-                    result.add(cand);
-                }
-            }
-        }
-        this.nodes = result;
-        return result;
+        return super.visitRpAttr(ctx);
     }
 
     @Override
     public ArrayList<Node> visitRpComma(XPathParser.RpCommaContext ctx) {
-        System.out.println("Rp_comma Called");
-        ArrayList<Node> result = new ArrayList<>();
-        ArrayList<Node> originalNodes = this.nodes;
-        //visit and store rp0
-        visit(ctx.rp(0));
-        ArrayList<Node> rp0 = this.nodes;
-        //visit and store rp1
-        this.nodes = originalNodes;
-        visit(ctx.rp(1));
-        ArrayList<Node> rp1 = this.nodes;
-        //concatennate and return
-        result.addAll(rp0);
-        result.addAll(rp1);
-        this.nodes = result;
-        return result;
+        return super.visitRpComma(ctx);
     }
 
     @Override

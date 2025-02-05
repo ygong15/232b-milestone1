@@ -1,4 +1,4 @@
-// Generated from XPath.g4 by ANTLR 4.13.2
+package main;// Generated from XPath.g4 by ANTLR 4.13.2
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -77,7 +77,7 @@ public class XPathParser extends Parser {
 	}
 
 	@Override
-	public String getGrammarFileName() { return "XPath.g4"; }
+	public String getGrammarFileName() { return "main/XPath.g4"; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }
